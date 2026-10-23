@@ -57,7 +57,7 @@ module I18n
             catch(:exception) do
               result = super(fallback, key, fallback_options)
               unless result.nil?
-                on_fallback(locale, fallback, key, options) if locale.to_sym != fallback.to_sym
+                on_fallback(locale, fallback, key, options) if locale != fallback && locale.to_s != fallback.to_s
                 return result
               end
             end
@@ -95,15 +95,15 @@ module I18n
       end
 
       def extract_non_symbol_default!(options)
-        default = options[:default]
-        return if default.is_a?(Symbol)
+        default_option = options[:default]
+        return if default_option.is_a?(Symbol)
 
-        unless default.is_a?(Array)
+        unless default_option.respond_to?(:to_ary)
           options[:default] = []
-          return default
+          return default_option
         end
 
-        defaults = default.flatten
+        defaults = default_option.to_ary.flatten
         first_non_symbol_default = defaults.detect{|default| !default.is_a?(Symbol)}
         if first_non_symbol_default
           options[:default] = defaults[0, defaults.index(first_non_symbol_default)]

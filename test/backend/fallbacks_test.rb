@@ -87,6 +87,15 @@ class I18nBackendFallbacksTranslateTest < I18n::TestCase
     assert_equal 'Default 6 Bars', I18n.t(:missing_foo, :locale => :'de-DE', :default => [:missing_bar, {:other => "Default %{count} Bars"}, "Default Bar"], :count => 6)
   end
 
+  test "flattens nested Array defaults" do
+    assert_equal "Default Bar", I18n.t(:missing_foo, :locale => :'de-DE', :default => [[:missing_bar, "Default Bar"], :baz])
+  end
+
+  test "expands a default that converts to an Array" do
+    defaults = Struct.new(:to_ary).new([:missing_bar, "Default Bar"])
+    assert_equal "Default Bar", I18n.t(:missing_foo, :locale => :'de-DE', :default => defaults)
+  end
+
   test "returns the default translation for a missing :de translation even when default is a String when fallback is disabled" do
     assert_equal 'Default String', I18n.t(:foo, :locale => :de, :default => 'Default String', :fallback => false)
   end

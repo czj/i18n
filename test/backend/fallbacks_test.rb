@@ -118,6 +118,12 @@ class I18nBackendFallbacksTranslateTest < I18n::TestCase
     assert_equal 'default', I18n.t(:missing_bar, count: 0, default: 'default')
   end
 
+  test "extracts a single String or Symbol default without building arrays" do
+    # The only Array allocated is the emptied default list.
+    assert_equal 1, allocated(:T_ARRAY) { I18n.backend.extract_non_symbol_default!(default: 'default') }
+    assert_equal 0, allocated(:T_ARRAY) { I18n.backend.extract_non_symbol_default!(default: :default) }
+  end
+
   test "multi-threaded fallbacks" do
     I18n.fallbacks = [:en]
 

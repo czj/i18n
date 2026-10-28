@@ -95,6 +95,23 @@ module I18n
       end
 
       def extract_non_symbol_default!(options)
+        # The usual defaults, without the arrays the general case below builds to flatten them.
+        case default = options[:default]
+        when Symbol
+          return
+        when String
+          options[:default] = []
+          return default
+        when Array
+          index = default.index { |item| !item.is_a?(Symbol) }
+          first_non_symbol_default = default[index] if index
+          return first_non_symbol_default unless first_non_symbol_default
+          unless first_non_symbol_default.respond_to?(:to_ary)
+            options[:default] = default[0, index]
+            return first_non_symbol_default
+          end
+        end
+
         defaults = [options[:default]].flatten
         first_non_symbol_default = defaults.detect{|default| !default.is_a?(Symbol)}
         if first_non_symbol_default

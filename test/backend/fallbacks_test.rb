@@ -118,6 +118,14 @@ class I18nBackendFallbacksTranslateTest < I18n::TestCase
     assert_equal 'default', I18n.t(:missing_bar, count: 0, default: 'default')
   end
 
+  test "builds a single Hash of options to try the fallback locales" do
+    simple = I18n::Backend::Simple.new
+    simple.store_translations(:en, :foo => 'Foo in :en')
+    options = { :scope => nil }
+    assert_equal allocated(:T_HASH) { simple.translate(:en, :foo, options) } + 1,
+      allocated(:T_HASH) { I18n.backend.translate(:en, :foo, options) }
+  end
+
   test "multi-threaded fallbacks" do
     I18n.fallbacks = [:en]
 

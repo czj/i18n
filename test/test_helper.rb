@@ -54,6 +54,23 @@ class I18n::TestCase < Minitest::Test
     klass.send(:remove_const, constant)
     klass.const_set(constant, old_value)
   end
+
+  # Objects of the given ObjectSpace type (:T_STRING, :T_HASH...) allocated by one call of the block:
+  # the lowest of two counts, as Ruby can allocate objects of its own during the first one.
+  def allocated(type)
+    skip "allocations are counted on CRuby only" unless RUBY_ENGINE == "ruby"
+    counts = {}
+    Array.new(2) do
+      yield
+      GC.start
+      disabled = GC.disable
+      before = ObjectSpace.count_objects(counts)[type]
+      yield
+      ObjectSpace.count_objects(counts)[type] - before
+    ensure
+      GC.enable unless disabled
+    end.min
+  end
 end
 
 class DummyRackApp

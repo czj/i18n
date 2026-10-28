@@ -118,10 +118,24 @@ class I18nBackendFallbacksTranslateTest < I18n::TestCase
     assert_equal 'default', I18n.t(:missing_bar, count: 0, default: 'default')
   end
 
-  test "extracts a single String or Symbol default without building arrays" do
-    # The only Array allocated is the emptied default list.
+  test "extracts defaults without building arrays" do
+    defaults = [:missing_bar, 'default', :baz]
+    # The only Array allocated is what is left of the defaults to try in each locale.
     assert_equal 1, allocated(:T_ARRAY) { I18n.backend.extract_non_symbol_default!(default: 'default') }
+    assert_equal 1, allocated(:T_ARRAY) { I18n.backend.extract_non_symbol_default!(default: defaults) }
     assert_equal 0, allocated(:T_ARRAY) { I18n.backend.extract_non_symbol_default!(default: :default) }
+  end
+
+  test "extracts the defaults before a nested Array" do
+    options = { default: [:missing_bar, [:missing_baz, 'default'], :buz] }
+    assert_equal 'default', I18n.backend.extract_non_symbol_default!(options)
+    assert_equal [:missing_bar, :missing_baz], options[:default]
+  end
+
+  test "keeps the defaults when the first one that isn't a Symbol is nil" do
+    options = { default: [:missing_bar, nil, 'default'] }
+    assert_nil I18n.backend.extract_non_symbol_default!(options)
+    assert_equal [:missing_bar, nil, 'default'], options[:default]
   end
 
   test "multi-threaded fallbacks" do

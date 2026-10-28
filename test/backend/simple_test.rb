@@ -63,6 +63,13 @@ class I18nBackendSimpleTest < I18n::TestCase
     end
   end
 
+  test "simple lookup: looks a missing Symbol key up without converting it to a String" do
+    backend = I18n::Backend::Simple.new
+    backend.store_translations :en, foo: { bar: "Bar" }
+    assert_equal false, backend.exists?(:en, :"foo.missing")
+    assert_equal 0, allocated(:T_STRING) { backend.exists?(:en, :"foo.missing") }
+  end
+
   # loading translations
   test "simple load_translations: given an unknown file type it raises I18n::UnknownFileType" do
     assert_raises(I18n::UnknownFileType) { I18n.backend.load_translations("#{locales_dir}/en.xml") }

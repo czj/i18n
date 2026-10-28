@@ -118,6 +118,11 @@ class I18nBackendFallbacksTranslateTest < I18n::TestCase
     assert_equal 'default', I18n.t(:missing_bar, count: 0, default: 'default')
   end
 
+  test "does not compare a found locale to itself as Strings" do
+    # The only String allocated is the copy of the translation.
+    assert_equal 1, allocated(:T_STRING) { I18n.backend.translate(:en, :foo) }
+  end
+
   test "multi-threaded fallbacks" do
     I18n.fallbacks = [:en]
 
